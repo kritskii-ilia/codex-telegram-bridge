@@ -1,97 +1,33 @@
 # Codex Telegram Bridge
 
-Local bridge service for controlling a locally installed Codex CLI through a Telegram bot with voice-message support. Voice is transcribed through OpenAI speech-to-text. Actual work stays local and is executed by `codex exec` inside WSL.
+Мост для управления локальным Codex CLI через Telegram. Отправляй задачи текстом или голосом — бот выполнит их локально и вернёт отчёт.
 
-This build is oriented around a root-run worker on the same server. The bridge uses OpenAI only for speech-to-text. Task execution itself goes directly to the local `codex` CLI.
+## Features
 
-## What It Does
-- Accepts Telegram text and voice messages.
-- Restricts access by Telegram user ID and optionally chat ID.
-- Stores jobs, queue state, project index, chat state, transcripts, reports, and logs in SQLite plus runtime artifacts.
-- Runs tasks asynchronously through a separate local worker.
-- Tracks active project per chat and keeps service-owned project memory files.
-- Sends back only the final structured report block.
+- Текстовые и голосовые сообщения (транскрипция через OpenAI)
+- Очередь задач с асинхронным выполнением
+- Контроль доступа по Telegram user ID
+- Отслеживание проектов и контекста между задачами
+- Структурированные отчёты о выполнении
+- Автономный воркер (бот и воркер работают отдельно)
 
-## Layout
-- `src/codex_telegram_bridge/`: application code.
-- `/var/lib/codex-telegram/`: default runtime home for jobs, transcripts, reports, project memory.
-- `/var/log/codex-telegram/`: default log directory.
-- `scripts/bootstrap.sh`: creates venv, installs dependencies, initializes database, runs first reindex.
-- `scripts/run_bot.sh`: starts Telegram bot.
-- `scripts/run_worker.sh`: starts worker.
-- `scripts/install_systemd.sh`: installs systemd unit files.
+## Tech Stack
+
+- Python 3.12
+- Telegram Bot API
+- OpenAI API (speech-to-text)
+- SQLite
+- systemd
 
 ## Quick Start
-1. `cd /home/user/codex-telegram-bridge`
-2. `bash scripts/bootstrap.sh`
-3. Fill `/home/user/codex-telegram.env`
-4. Start manually:
-   - `sudo bash scripts/run_bot.sh`
-   - `sudo bash scripts/run_worker.sh`
 
-## Required Env Values
-- `TELEGRAM_BOT_TOKEN`
-- `OPENAI_API_KEY`
-- `TELEGRAM_ALLOWED_USER_ID`
-- `TELEGRAM_ADMIN_CHAT_ID`
-- `PROJECTS_ROOT`
+```bash
+bash scripts/bootstrap.sh
+# Заполни токены в .env
+sudo bash scripts/run_bot.sh
+sudo bash scripts/run_worker.sh
+```
 
-## Useful Optional Env Values
-- `BRIDGE_SCAN_ROOTS`
-- `DOWNLOADS_PATH`
-- `CODEX_MODEL`
-- `JOB_TIMEOUT_SECONDS`
-- `LOGS_ROOT`
-- `STATE_DB_PATH`
+## Commands
 
-## Telegram Commands
-- `/start`
-- `/help`
-- `/status`
-- `/queue`
-- `/current`
-- `/last`
-- `/cancel`
-- `/projects`
-- `/use_project <name_or_path>`
-
-Text shortcuts are also supported for:
-- project switching;
-- queue status;
-- current project;
-- cancel current job;
-- listing projects.
-
-## Project Context
-Projects are indexed from `BRIDGE_SCAN_ROOTS`. A project is detected by markers such as `.git`, `pyproject.toml`, `package.json`, `requirements.txt`, `Cargo.toml`, `go.mod`, or `README.md`.
-
-Bridge-owned state files live under:
-- `/var/lib/codex-telegram/project_states/<project-key>.md`
-
-After each successful job the latest final report is stored into the project memory file so a future task can continue with less context loss.
-
-## Runtime Data
-- `/var/lib/codex-telegram/state.db`: queue, jobs, chat state, projects.
-- `/var/log/codex-telegram/bot.log`
-- `/var/log/codex-telegram/worker.log`
-- `/var/lib/codex-telegram/jobs/job-<id>/`
-- `/var/lib/codex-telegram/voices/`
-- `/var/lib/codex-telegram/transcripts/`
-- `/var/lib/codex-telegram/reports/job-<id>.txt`
-
-## Systemd
-If `systemd` is enabled in WSL:
-1. `sudo bash scripts/install_systemd.sh`
-2. `sudo systemctl start codex-telegram-bridge-bot`
-3. `sudo systemctl start codex-telegram-bridge-worker`
-
-Useful commands:
-- `systemctl status codex-telegram-bridge-bot`
-- `systemctl status codex-telegram-bridge-worker`
-- `journalctl -u codex-telegram-bridge-bot -f`
-- `journalctl -u codex-telegram-bridge-worker -f`
-
-## Notes
-- The bridge uses OpenAI only for speech-to-text.
-- Main execution goes through local `codex exec`, optionally prefixed with `sudo -n` if the worker is not already running as root.
-- Existing projects are not modified unless a queued task instructs Codex to do so.
+`/start` `/help` `/status` `/queue` `/current` `/last` `/cancel` `/projects` `/use_project <name>`
