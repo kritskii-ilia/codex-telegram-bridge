@@ -1,0 +1,4 @@
+[console_scripts]
+codex-telegram-bridge-admin = codex_telegram_bridge.admin:main
+codex-telegram-bridge-bot = codex_telegram_bridge.main_bot:main
+codex-telegram-bridge-worker = codex_telegram_bridge.main_worker:main

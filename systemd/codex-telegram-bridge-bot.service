@@ -1,0 +1,16 @@
+[Unit]
+Description=Codex Telegram Bridge Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/user/codex-telegram-bridge
+Environment=CODEX_TELEGRAM_ENV_FILE=/home/user/codex-telegram-bridge/.env
+EnvironmentFile=/home/user/codex-telegram-bridge/.env
+ExecStart=/home/user/codex-telegram-bridge/.venv/bin/codex-telegram-bridge-bot
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

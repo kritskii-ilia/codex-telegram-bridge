@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codex-telegram-bridge"
+version = "0.1.0"
+description = "Local Telegram bridge for Codex CLI with speech-to-text, queueing, and project context."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "openai>=1.68.2",
+  "python-telegram-bot>=21.10",
+  "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.5",
+]
+
+[project.scripts]
+codex-telegram-bridge-bot = "codex_telegram_bridge.main_bot:main"
+codex-telegram-bridge-worker = "codex_telegram_bridge.main_worker:main"
+codex-telegram-bridge-admin = "codex_telegram_bridge.admin:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
